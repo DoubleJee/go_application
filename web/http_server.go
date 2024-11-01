@@ -24,7 +24,11 @@ func NewHttpServer(lc fx.Lifecycle) *gin.Engine {
 				ctx.Data(200, "text/html; charset=utf-8", []byte("<h1>Hello</h1>"))
 			})
 
-			return r.Run()
+			go func() {
+				r.Run()
+			}()
+
+			return nil
 		},
 	})
 
