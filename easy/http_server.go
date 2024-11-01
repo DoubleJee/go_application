@@ -33,6 +33,11 @@ func NewHttpServer(lc fx.Lifecycle, mux *http.ServeMux) *http.Server {
 	return srv
 }
 
+type Route interface {
+	http.Handler
+	Pattern() string
+}
+
 type EchoHandler struct{}
 
 func NewEchoHandler() *EchoHandler {
@@ -48,8 +53,33 @@ func (*EchoHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// }
 }
 
-func NewServeMux(echo *EchoHandler) *http.ServeMux {
+func (*EchoHandler) Pattern() string {
+	return "/echo"
+}
+
+type HelloHandler struct{}
+
+func NewHelloHandler() *HelloHandler {
+	return &HelloHandler{}
+}
+
+func (*HelloHandler) Pattern() string {
+	return "/hello"
+}
+
+func (*HelloHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+
+	fmt.Fprintf(w, "<h1>Hello! This is my home<h1>")
+
+}
+
+func NewServeMux(routes []Route) *http.ServeMux {
 	mux := http.NewServeMux()
-	mux.Handle("/echo", echo)
+
+	fmt.Println("routes ==>", routes)
+	for _, route := range routes {
+		mux.Handle(route.Pattern(), route)
+	}
+
 	return mux
 }
